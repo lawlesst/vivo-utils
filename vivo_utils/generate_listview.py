@@ -4,7 +4,6 @@ Utility for developing listViewConfig queries.
 More details are available at: http://lawlesst.github.io/notebook/vivo-listview.html
 
 """
-import json
 from pprint import pprint
 import optparse
 import re
@@ -12,7 +11,6 @@ import xml.etree.ElementTree as ET
 
 from rdflib import Graph
 from rdflib.namespace import split_uri
-import rdflib_sparql
 
 #logging
 import logging
