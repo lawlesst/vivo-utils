@@ -21,6 +21,10 @@ _SPARQL_JSON.append('application/javascript')
 
 from web_client import Session
 
+#logging
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class VIVOSparql(SPARQLWrapper):
     """
@@ -30,7 +34,6 @@ class VIVOSparql(SPARQLWrapper):
     """
 
     def __init__(self, **kwargs):
-        #import ipdb; ipdb.set_trace()
         self.vweb = Session()
         self.session = None
         #Add the VIVO SPARQL end point path to the VIVO url.
