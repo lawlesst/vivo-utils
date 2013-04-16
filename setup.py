@@ -14,6 +14,7 @@ setup(
     entry_points={
         'console_scripts': [
             'generateListView = vivo_utils.generate_listview:main',
+            'vivoWebClient = vivo_utils.web_client:main'
         ]
     }
 )
