@@ -4,13 +4,15 @@ Utility for developing listViewConfig queries.
 More details are available at: http://lawlesst.github.io/notebook/vivo-listview.html
 
 """
+import json
+from pprint import pprint
 import optparse
 import re
 import xml.etree.ElementTree as ET
-from pprint import pprint
 
 from rdflib import Graph
 from rdflib.namespace import split_uri
+import rdflib_sparql
 
 #logging
 import logging
@@ -91,12 +93,8 @@ def main():
     for row in g.query(select_query):
         pretty_dict = dict(zip(field_list, row))
         results_list.append(pretty_dict)
-        #print row
-
-    for count, row in enumerate(results_list):
-        pprint(row)
-        if (config.max) and (count >= int(config.max)):
-            break
+    
+    pprint(results_list)
 
     sparql.logout()
 
