@@ -1,5 +1,8 @@
 """
 Utility for developing listViewConfig queries.
+
+More details are available at: http://lawlesst.github.io/notebook/vivo-listview.html
+
 """
 import optparse
 import re
@@ -42,7 +45,7 @@ def process_listview_select(tree):
     return (select, field_list)
 
 
-if __name__ == "__main__":
+def main():
     p = optparse.OptionParser()
     p.add_option('-s', '--subject', help="Subject for query.")
     p.add_option('-p', '--property', help="Property for query.")
@@ -96,3 +99,6 @@ if __name__ == "__main__":
             break
 
     sparql.logout()
+
+if __name__ == "__main__":
+    main()
