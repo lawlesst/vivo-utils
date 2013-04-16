@@ -1,0 +1,4 @@
+requests
+rdflib
+SPARQLWrapper
+git+git://github.com/RDFLib/rdflib-sparql.git
