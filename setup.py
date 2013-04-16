@@ -9,11 +9,11 @@ setup(
     long_description=open('README.md').read(),
     author='Ted Lawless',
     author_email='tlawless@brown.edu',
-    install_requires=['requests', 'rdflib'],
-    dependency_links = ['https://github.com/RDFLib/rdflib-sparql/tarball/master#egg=rdflib-sparql==0.2-dev'],
+    install_requires=['requests', 'rdflib', 'SPARQLWrapper'],
+    dependency_links = ['https://github.com/RDFLib/rdflib-sparql/tarball/master#egg=rdflib-sparql-0.2-dev'],
     entry_points={
         'console_scripts': [
-            'generateListView = vivo_utils.generate_list_view:main',
+            'generateListView = vivo_utils.generate_listview:main',
         ]
     }
 )
