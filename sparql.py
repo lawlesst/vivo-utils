@@ -1,0 +1,117 @@
+"""
+A subclass of SPARQLWrapper that will work with the built-in
+SPARQL admin interface that comes with VIVO.
+
+At the moment, will only return RS_JSON for SELECT and
+N3 for CONSTRUCT queries.
+
+"""
+
+import urllib
+import urllib2
+
+from rdflib import Graph
+
+from SPARQLWrapper import SPARQLWrapper, JSON, N3
+from SPARQLWrapper.SPARQLExceptions import QueryBadFormed, EndPointNotFound, EndPointInternalError
+from SPARQLWrapper.Wrapper import _SPARQL_JSON
+
+#VIVO returns its RS_JSON as application/javascript
+_SPARQL_JSON.append('application/javascript')
+
+from web_client import Session
+
+
+class VIVOSparql(SPARQLWrapper):
+    """
+    Extension of SPARQLWrapper to work with the built-in VIVO
+    SPARQL query interface.  Eliminates the need to use Fuseki
+    for SPARQL non-update queries.
+    """
+
+    def __init__(self, **kwargs):
+        #import ipdb; ipdb.set_trace()
+        self.vweb = Session()
+        self.session = None
+        #Add the VIVO SPARQL end point path to the VIVO url.
+        self.endpoint = self.vweb.url + 'admin/sparqlquery'
+        SPARQLWrapper.__init__(self, self.endpoint, kwargs)
+        #The resultFormat and rdfResultFormat are required
+        #parameters for the VIVO SPARQL interface.
+        #This are set to RS_JSON for SELECT and
+        #N3 for CONSTRUCT.  These can be overridden when
+        #called but have not been tested.
+        self.addCustomParameter('resultFormat', 'RS_JSON')
+        self.addCustomParameter('rdfResultFormat', 'N3')
+
+    def login(self):
+        """
+        Login to the VIVO web interface.
+        """
+        self.vweb.login()
+        self.session = self.vweb.session
+        self.cookies = urllib.urlencode(self.session.cookies)
+
+    def logout(self):
+        """
+        End the VIVO web session.
+        """
+        self.vweb.logout()
+
+    def setQuery(self, query):
+        """
+        Handle query response format by looking at the response type.
+        """
+        if 'construct' in query.lower():
+            self.setReturnFormat(N3)
+        else:
+            self.setReturnFormat(JSON)
+        SPARQLWrapper.setQuery(self, query)
+
+    def _query(self):
+        """
+        Override _query method to use cookies acquired on login.
+        """
+        request = self._createRequest()
+        try:
+            opener = urllib2.build_opener()
+            opener.addheaders.append(('Cookie', self.cookies))
+            response = opener.open(request)
+            return (response, self.returnFormat)
+        except urllib2.HTTPError, e:
+            if e.code == 400:
+                raise QueryBadFormed()
+            elif e.code == 404:
+                raise EndPointNotFound()
+            elif e.code == 500:
+                raise EndPointInternalError(e.read())
+            else:
+                raise e
+            return (None, self.returnFormat)
+
+    def results_graph(self):
+        """
+        Shortcut for use with CONSTRUCT queries.  Returns
+        results as an RDFLib graph.
+        """
+        resp, rformat = self._query()
+        if rformat == 'N3':
+            rformat = 'n3'
+        g = Graph()
+        g.parse(resp, format=rformat)
+        return g
+
+
+if __name__ == "__main__":
+    #Simple query to see if all is working as expected.
+    q = """
+    PREFIX vivo: <http://vivoweb.org/ontology/core#>
+    SELECT *
+    WHERE {?s a vivo:FacultyMember}
+    LIMIT 3
+    """
+    sparql = VIVOSparql()
+    sparql.login()
+    sparql.setQuery(q)
+    print sparql.queryAndConvert()
+    sparql.logout()
