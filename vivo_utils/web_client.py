@@ -85,14 +85,15 @@ def add_rdf(file_path, format='N3'):
     vs = Session()
     vs.login()
     base_url = vs.url
+    payload = dict(
+        language=format,
+        submit='Load Data',
+        action='loadRDFData',
+    )
     p = vs.session.post(
         base_url + 'uploadRDF',
         verify=False,
-        data={
-            'mode': 'directAddABox',
-            'language': format,
-            'submit': 'submit'
-        },
+        data=payload,
         files={'rdfStream': (filename, open(file_path, 'rb'))}
     )
     #All posts seem to return a 200.  Should check for messages that
@@ -104,7 +105,7 @@ def add_rdf(file_path, format='N3'):
         #org.xml.sax.SAXParseException: The element type "link"
         #must be terminated by the matching end-tag "".
     print>>sys.stderr, "Adding %s to %s." % (file_path, base_url)
-    if p.content.find('RDF upload successful.') == -1:
+    if p.status_code != 200:
         raise Exception('Error adding RDF.  Check Vivo log.\n%s' % p.content)
     vs.logout()
     return True
@@ -115,21 +116,22 @@ def remove_rdf(file_path, format='N3'):
     vs = Session()
     vs.login()
     base_url = vs.url
+    payload = dict(
+        mode='remove',
+        language=format,
+        submit='submit',
+    )
     p = vs.session.post(
         base_url + 'uploadRDF',
         verify=False,
-        data={
-            'mode': 'remove',
-            'language': format,
-            'submit': 'submit'
-        },
+        data=payload,
         files={'rdfStream': (filename, open(file_path, 'rb'))},
         headers={'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'}
     )
     print>>sys.stderr, "Removing %s from %s." % (file_path, base_url)
     #Here we can actually look for this text:
     #Removed RDF from file post_sample.n3. Removed 1 statements.
-    if p.content.find('Removed RDF from file %s.' % filename) == -1:
+    if p.status_code != 200:
         raise Exception('Error removing RDF.  Check Vivo log.\n%s' % p.content)
     vs.logout()
     return True
@@ -181,12 +183,15 @@ def rebuild_index(config):
     return True
 
 
-def merge_individuals(uri1, uri2):
+def merge_individuals(uri1, uri2, session=None):
     """
     Use the merge tool to merge individual resources.
     """
-    s = Session()
-    s.login()
+    if session is not None:
+        s = session
+    else:
+        s = Session()
+        s.login()
     base_url = s.url
     params = {'action': 'mergeResources',
               'uri1': uri1,
@@ -200,6 +205,90 @@ def merge_individuals(uri1, uri2):
         raise Exception("Merge failed; requests output: %s" % merge.content)
     s.logout()
     return True
+
+
+def created_named_graph(name, session=None):
+    """action:createModel
+    modelName:http://localhost/staged
+    submit:Create Model
+    modelType:sdb"""
+    s = Session()
+    s.login()
+    params = {
+        'action': 'createModel',
+        'modelName': name,
+        'submit': 'Create Model',
+        'modelType': 'sdb',
+    }
+    r = s.session.post(s.url + 'ingest', data=params)
+    if r.status_code != 200:
+        raise Exception('Action failed:\n{0}'.format(r.content))
+    print r.content
+    print r.url
+    return
+
+
+def remove_named_graph(name, session=None):
+    """action:createModel
+    modelName:http://localhost/staged
+    submit:Create Model
+    modelType:sdb"""
+    s = Session()
+    s.login()
+    params = {
+        'action': 'removeModel',
+        'modelName': name,
+        'submit': 'remove',
+        'modelType': 'sdb',
+    }
+    s.session.post(s.url + 'ingest', data=params)
+    return
+
+
+def clear_named_graph(name, session=None):
+    """action:clearModel
+    modelName:http://localhost/staged
+    modelType:sdb
+    submit:clear statements"""
+    s = Session()
+    s.login()
+    params = {
+        'action': 'clearModel',
+        'modelName': name,
+        'submit': 'clear statements',
+        'modelType': 'sdb',
+    }
+    s.session.post(s.url + 'ingest', data=params)
+    return
+
+
+def add_rdf_to_named_graph(file_path, model_name, format='N3'):
+    filename, extension = get_name_extension(file_path)
+    vs = Session()
+    vs.login()
+    base_url = vs.url
+    payload = dict(
+        language=format,
+        submit='Load Data',
+        modelName=model_name,
+        docLoc='',
+    )
+    print payload
+    p = vs.session.post(
+        base_url + 'uploadRDF',
+        verify=False,
+        data=payload,
+        files={'filePath': (filename, open(file_path, 'rb'))}
+    )
+    print p.url
+    print p.status_code
+    print p.headers
+    if p.status_code != 200:
+        raise Exception('Error adding RDF.  Check Vivo log.\n%s' % p.content)
+    vs.logout()
+    return True
+
+
 
 def main():
     p = optparse.OptionParser()
