@@ -91,9 +91,7 @@ def main():
     for row in g.query(select_query):
         pretty_dict = dict(zip(field_list, row))
         results_list.append(pretty_dict)
-    
     pprint(results_list)
-
     sparql.logout()
 
 if __name__ == "__main__":
