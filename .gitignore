@@ -1,5 +1,6 @@
 
 models/*
+local_setvivoenv.sh
 
 *.py[cod]
 
