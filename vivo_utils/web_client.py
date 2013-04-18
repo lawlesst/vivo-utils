@@ -1,5 +1,3 @@
-#!../venv/bin/python
-
 """
 Login to the Vivo web app and post RDF files for 'Add' and 'Remove'.
 
@@ -10,8 +8,6 @@ will be triggered.
 Writing directly to the models with Jena doesn't allow for that.
 
 """
-
-
 import optparse
 import os
 import sys
