@@ -6,9 +6,11 @@ At the moment, will only return RS_JSON for SELECT and
 N3 for CONSTRUCT queries.
 
 """
-
+import csv
+from StringIO import StringIO
 import urllib
 import urllib2
+import warnings
 
 from rdflib import Graph
 
@@ -46,6 +48,7 @@ class VIVOSparql(SPARQLWrapper):
         #called but have not been tested.
         self.addCustomParameter('resultFormat', 'RS_JSON')
         self.addCustomParameter('rdfResultFormat', 'N3')
+        self.format = None
 
     def login(self):
         """
@@ -61,14 +64,16 @@ class VIVOSparql(SPARQLWrapper):
         """
         self.vweb.logout()
 
+
     def setQuery(self, query):
         """
         Handle query response format by looking at the response type.
         """
         if 'construct' in query.lower():
             self.setReturnFormat(N3)
-        else:
-            self.setReturnFormat(JSON)
+        elif 'select' in query.lower():
+            if self.format != 'csv':
+                self.setReturnFormat(JSON)
         SPARQLWrapper.setQuery(self, query)
 
     def _query(self):
@@ -103,6 +108,26 @@ class VIVOSparql(SPARQLWrapper):
         g = Graph()
         g.parse(resp, format=rformat)
         return g
+
+    def results_csv(self, query, filename='results.csv'):
+        """
+        Shortcut for use with SELECT queries.  Outpus
+        as CSV file.  
+        """
+        #Hide warnings.  CSV isn't recognized by SPARQLWrapper.
+        warnings.simplefilter("ignore")
+        format = 'vitro:csv'
+        self.addCustomParameter('resultFormat', format)
+        self.format = 'csv'
+        self.setQuery(query)
+        results = self.queryAndConvert()
+        rows = csv.reader(StringIO(results.read()))
+        with open(filename, 'wb') as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)
+        return True
+
+
 
 
 if __name__ == "__main__":
