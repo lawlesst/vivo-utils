@@ -12,4 +12,6 @@ WHERE
 }
 """
 
-sparql.results_csv(query)
+#Optionally pass in a filename or path to save the results to CSV.
+#By default results will be saved to the current directory as results.csv
+sparql.results_csv(query, filename="/tmp/myresults.csv")
