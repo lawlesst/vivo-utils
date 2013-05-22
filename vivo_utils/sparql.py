@@ -64,16 +64,19 @@ class VIVOSparql(SPARQLWrapper):
         """
         self.vweb.logout()
 
-
     def setQuery(self, query):
         """
         Handle query response format by looking at the response type.
         """
-        if 'construct' in query.lower():
+        if ('construct' in query.lower()) or\
+                ('describe' in query.lower()):
             self.setReturnFormat(N3)
         elif 'select' in query.lower():
             if self.format != 'csv':
                 self.setReturnFormat(JSON)
+        else:
+            raise Exception("Query type not supported.\
+            Options are CONSTRUCT, SELECT, DESCRIBE.")
         SPARQLWrapper.setQuery(self, query)
 
     def _query(self):
@@ -112,7 +115,7 @@ class VIVOSparql(SPARQLWrapper):
     def results_csv(self, query, filename='results.csv'):
         """
         Shortcut for use with SELECT queries.  Outpus
-        as CSV file.  
+        as CSV file.
         """
         #Hide warnings.  CSV isn't recognized by SPARQLWrapper.
         warnings.simplefilter("ignore")
