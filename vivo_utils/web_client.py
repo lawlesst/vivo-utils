@@ -47,7 +47,6 @@ class Session(object):
             data=payload,
             verify=False
         )
-        self.cookies = urllib.urlencode(self.session.cookies)
 
     def logout(self):
         """
@@ -60,6 +59,56 @@ class Session(object):
             return True
         else:
             raise Exception('Logout failed.')
+
+    def add_rdf(self, file_path, format='N3'):
+        filename, extension = get_name_extension(file_path)
+        base_url = self.url
+        payload = dict(
+            language=format,
+            submit='submit',
+            #action='loadRDFData',
+            mode='directAddABox'
+        )
+        resp = self.session.post(
+            base_url + 'uploadRDF',
+            verify=False,
+            data=payload,
+            files={'rdfStream': (filename, open(file_path, 'rb'))}
+        )
+        #All posts seem to return a 200.  Should check for messages that
+        #indicate something went wrong.
+        #Success: RDF upload successful.
+        #Error: Could not load from file:
+        #edu.cornell.mannlib.vitro.webapp.rdfservice.
+        #RDFServiceException: com.hp.hpl.jena.shared.JenaException:
+        #org.xml.sax.SAXParseException: The element type "link"
+        #must be terminated by the matching end-tag "".
+        print>>sys.stderr, "Adding %s to %s." % (file_path, base_url)
+        if resp.status_code != 200:
+            raise Exception('Error adding RDF.  Check Vivo log.\n%s' % resp.content)
+        return True
+
+    def remove_rdf(self, file_path, format='N3'):
+        filename, extension = get_name_extension(file_path)
+        base_url = self.url
+        payload = dict(
+            mode='remove',
+            language=format,
+            submit='submit',
+        )
+        p = self.session.post(
+            base_url + 'uploadRDF',
+            verify=False,
+            data=payload,
+            files={'rdfStream': (filename, open(file_path, 'rb'))},
+            headers={'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'}
+        )
+        print>>sys.stderr, "Removing %s from %s." % (file_path, base_url)
+        #Here we can actually look for this text:
+        #Removed RDF from file post_sample.n3. Removed 1 statements.
+        if p.status_code != 200:
+            raise Exception('Error removing RDF.  Check Vivo log.\n%s' % p.content)
+        return True
 
 
 def get_name_extension(path):
@@ -86,7 +135,7 @@ def add_rdf(file_path, format='N3'):
         submit='Load Data',
         action='loadRDFData',
     )
-    p = vs.session.post(
+    resp = vs.session.post(
         base_url + 'uploadRDF',
         verify=False,
         data=payload,
@@ -96,13 +145,13 @@ def add_rdf(file_path, format='N3'):
     #indicate something went wrong.
     #Success: RDF upload successful.
     #Error: Could not load from file:
-        #edu.cornell.mannlib.vitro.webapp.rdfservice.
-        #RDFServiceException: com.hp.hpl.jena.shared.JenaException:
-        #org.xml.sax.SAXParseException: The element type "link"
-        #must be terminated by the matching end-tag "".
+    #edu.cornell.mannlib.vitro.webapp.rdfservice.
+    #RDFServiceException: com.hp.hpl.jena.shared.JenaException:
+    #org.xml.sax.SAXParseException: The element type "link"
+    #must be terminated by the matching end-tag "".
     print>>sys.stderr, "Adding %s to %s." % (file_path, base_url)
-    if p.status_code != 200:
-        raise Exception('Error adding RDF.  Check Vivo log.\n%s' % p.content)
+    if resp.status_code != 200:
+        raise Exception('Error adding RDF.  Check Vivo log.\n%s' % resp.content)
     vs.logout()
     return True
 
