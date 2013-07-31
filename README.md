@@ -22,3 +22,5 @@ $ source setvivoenv.sh
 * If you want to write customize listViewConfigs but want to experiment with queries before adding the config to the web application.
 
 
+Note: there is an [RDF web service api](https://wiki.duraspace.org/display/VIVO/RDFServiceRequest+API) planned for VIVO/Vitro 1.6 due to be released in August of 2013.
+Once that is available, this code will be updated to work with that.  
