@@ -10,6 +10,10 @@ Run
 ~~~
 $ pip install git+https://github.com/lawlesst/vivo-utils.git
 ~~~
+Edit setvivoenv.sh to match your VIVO web application and run
+~~~
+$ source setvivoenv.sh
+~~~
 
 ### How will this be useful for my VIVO project? 
 
