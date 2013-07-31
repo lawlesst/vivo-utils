@@ -8,5 +8,5 @@ Installation
 
 Run
 ~~~
-$pip install git+https://github.com/lawlesst/vivo-utils.git
+$ pip install git+https://github.com/lawlesst/vivo-utils.git
 ~~~
