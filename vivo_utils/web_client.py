@@ -110,6 +110,20 @@ class Session(object):
             raise Exception('Error removing RDF.  Check Vivo log.\n%s' % p.content)
         return True
 
+    def merge(self, uri1, uri2):
+        base_url = self.url
+        params = {'action': 'mergeResources',
+                  'uri1': uri1,
+                  'uri2': uri2,
+                  'usePrimaryLabelOnly': 'Use Primary Label Only',
+                  'submit': 'Merge resources'}
+        merge = self.session.get(base_url + 'ingest', params=params)
+        if merge.url == base_url + 'authenticate':
+            raise Exception("Failed to login to VIVO.")
+        if merge.status_code != 200:
+            raise Exception("Merge failed; requests output: %s" % merge.content)
+        return True
+
 
 def get_name_extension(path):
     """
