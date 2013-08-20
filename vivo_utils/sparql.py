@@ -74,9 +74,9 @@ class VIVOSparql(SPARQLWrapper):
         elif 'select' in query.lower():
             if self.format != 'csv':
                 self.setReturnFormat(JSON)
-        else:
-            raise Exception("Query type not supported.\
-            Options are CONSTRUCT, SELECT, DESCRIBE.")
+        #else:
+        #    raise Exception("Query type not supported.\
+        #    Options are CONSTRUCT, SELECT, DESCRIBE.")
         SPARQLWrapper.setQuery(self, query)
 
     def _query(self):
