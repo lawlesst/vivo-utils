@@ -2,8 +2,8 @@ from distutils.core import setup
 
 
 setup(
-    name='VIVO utils',
-    version='0.1',
+    name='vivo-utils',
+    version='0.2',
     packages=['vivo_utils',],
     description='Tools for ingesting and managing VIVO data.',
     long_description=open('README.md').read(),
