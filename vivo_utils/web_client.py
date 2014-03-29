@@ -25,6 +25,7 @@ class Session(object):
     def __init__(self, **kwargs):
         self.session = requests.session()
         self.url = self._get_vivo_url()
+        self.logged_in = False
 
     def _get_vivo_url(self):
         """Helper to make sure trailing slash
@@ -47,6 +48,7 @@ class Session(object):
             data=payload,
             verify=False
         )
+        self.logged_in = True
 
     def logout(self):
         """
@@ -56,11 +58,14 @@ class Session(object):
         #Check response history for logout.
         logout_resp = resp.history[0]
         if logout_resp.status_code == 302:
+            self.logged_in = False
             return True
         else:
             raise Exception('Logout failed.')
 
     def add_rdf(self, file_path, format='N3'):
+        if self.logged_in != True:
+            raise Exception("VIVO session not created.  Need to call login.")
         filename, extension = get_name_extension(file_path)
         base_url = self.url
         payload = dict(
@@ -83,12 +88,14 @@ class Session(object):
         #RDFServiceException: com.hp.hpl.jena.shared.JenaException:
         #org.xml.sax.SAXParseException: The element type "link"
         #must be terminated by the matching end-tag "".
-        print>>sys.stderr, "Adding %s to %s." % (file_path, base_url)
+        _logger.info("Adding %s to %s." % (file_path, base_url))
         if resp.status_code != 200:
             raise Exception('Error adding RDF.  Check Vivo log.\n%s' % resp.content)
         return True
 
     def remove_rdf(self, file_path, format='N3'):
+        if self.logged_in != True:
+            raise Exception("VIVO session not created.  Need to call login.")
         filename, extension = get_name_extension(file_path)
         base_url = self.url
         payload = dict(
@@ -103,7 +110,7 @@ class Session(object):
             files={'rdfStream': (filename, open(file_path, 'rb'))},
             headers={'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'}
         )
-        print>>sys.stderr, "Removing %s from %s." % (file_path, base_url)
+        _logger.info("Removing %s from %s." % (file_path, base_url))
         #Here we can actually look for this text:
         #Removed RDF from file post_sample.n3. Removed 1 statements.
         if p.status_code != 200:
@@ -111,6 +118,8 @@ class Session(object):
         return True
 
     def merge(self, uri1, uri2):
+        if self.logged_in != True:
+            raise Exception("VIVO session not created.  Need to call login.")
         base_url = self.url
         params = {'action': 'mergeResources',
                   'uri1': uri1,
