@@ -38,7 +38,7 @@ class VIVOSparql(SPARQLWrapper):
     def __init__(self, **kwargs):
         self.url = kwargs.get('url')
         if self.url:
-            self.vweb = Session()
+            self.vweb = Session(url=self.url)
         else:
             self.vweb = Session()
         self.session = None
