@@ -24,7 +24,7 @@ class Session(object):
 
     def __init__(self, **kwargs):
         self.session = requests.session()
-        self.url = self._get_vivo_url()
+        self.url = kwargs.get('url') or self._get_vivo_url()
         self.logged_in = False
 
     def _get_vivo_url(self):
@@ -34,15 +34,17 @@ class Session(object):
         vurl = os.getenv('VIVO_URL').rstrip('/') + '/'
         return vurl
 
-    def login(self):
+    def login(self, username=None, password=None):
         """
         Login to the VIVO web interface.
         """
         payload = {
-            'loginName': os.getenv('VIVO_USER'),
-            'loginPassword': os.getenv('VIVO_PASS'),
+            'loginName': username or os.getenv('VIVO_USER'),
+            'loginPassword': password or os.getenv('VIVO_PASS'),
             'loginForm': 'Log in'
         }
+        if (payload['loginName'] is None) or (payload['loginPassword'] is None):
+            raise Exception("No username or password provided for VIVO web app.")
         self.session.post(
             self.url + 'authenticate',
             data=payload,

@@ -36,7 +36,11 @@ class VIVOSparql(SPARQLWrapper):
     """
 
     def __init__(self, **kwargs):
-        self.vweb = Session()
+        self.url = kwargs.get('url')
+        if self.url:
+            self.vweb = Session()
+        else:
+            self.vweb = Session()
         self.session = None
         #Add the VIVO SPARQL end point path to the VIVO url.
         self.endpoint = self.vweb.url + 'admin/sparqlquery'
@@ -49,12 +53,19 @@ class VIVOSparql(SPARQLWrapper):
         self.addCustomParameter('resultFormat', 'RS_JSON')
         self.addCustomParameter('rdfResultFormat', 'N3')
         self.format = None
+        self.username = kwargs.get('username')
+        self.password = kwargs.get('password')
 
     def login(self):
         """
         Login to the VIVO web interface.
         """
-        self.vweb.login()
+        kw = {}
+        if self.username is not None:
+            kw['username'] = self.username
+        if self.password is not None:
+            kw['password'] = self.password
+        self.vweb.login(**kw)
         self.session = self.vweb.session
         self.cookies = urllib.urlencode(self.session.cookies)
 
