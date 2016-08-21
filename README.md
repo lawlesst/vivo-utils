@@ -1,3 +1,10 @@
+
+---
+
+```This code is no longer maintained or up-to-date with the current version of [VIVO](http://vivoweb.org/). Please see the [VIVO wiki](https://wiki.duraspace.org/display/VIVO/Community+Projects) for community developed tools.```
+
+---
+
 Tools for ingesting and managing VIVO data with Python.
 
 ### Installation
